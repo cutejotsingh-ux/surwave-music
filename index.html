@@ -1,37 +1,442 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8" />
-  <title>SonicAI</title>
-
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SonicAI - Generate Music with AI</title>
+    <meta name="description" content="Create studio-quality music with Artificial Intelligence. Text to Audio generation in seconds.">
+    
+    <!-- React and Libraries -->
+    <script src="https://unpkg.com/react@18.2.0/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1a3a 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        /* Custom Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.6); }
+        }
+        
+        @keyframes wave {
+            0% { transform: scaleY(0.3); }
+            50% { transform: scaleY(1); }
+            100% { transform: scaleY(0.3); }
+        }
+        
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .animate-glow {
+            animation: glow 3s ease-in-out infinite;
+        }
+        
+        .wave-bar {
+            animation: wave 0.8s ease-in-out infinite;
+        }
+        
+        .animate-spin-slow {
+            animation: spin-slow 8s linear infinite;
+        }
+        
+        /* Glass morphism */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 1.5rem;
+        }
+        
+        .glass-card-light {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            border-radius: 10px;
+        }
+        
+        /* Input Styles */
+        input, textarea, select {
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+    </style>
 </head>
+<body>
+    <div id="root"></div>
 
-<body class="bg-black text-white">
-  <div id="root"></div>
-
-  <script type="text/babel">
-    function App() {
-      return (
-        <div className="p-10 text-center">
-          <h1 className="text-4xl font-bold text-purple-500">
-            🎵 SonicAI
-          </h1>
-          <p className="mt-4 text-gray-300">
-            Generate Music with AI
-          </p>
-
-          <button className="mt-6 px-6 py-3 bg-purple-600 rounded-full hover:bg-purple-700">
-            Generate Music
-          </button>
-        </div>
-      );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
-</body>
-</html>
+    <script>
+        const { useState, useEffect, useRef } = React;
+        
+        // ==================== AI MUSIC SYNTHESIZER ENGINE ====================
+        class SonicAISynth {
+            constructor() {
+                this.audioCtx = null;
+                this.isPlaying = false;
+                this.activeNodes = [];
+                this.gainNode = null;
+                this.currentTimeout = null;
+            }
+            
+            initAudio() {
+                if (this.audioCtx) return;
+                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                this.gainNode = this.audioCtx.createGain();
+                this.gainNode.gain.value = 0.3;
+                this.gainNode.connect(this.audioCtx.destination);
+            }
+            
+            // AI Melody Generation based on prompt and genre
+            generateMelody(textPrompt, genre) {
+                // Create hash from text prompt for unique variations
+                let hash = 0;
+                for (let i = 0; i < textPrompt.length; i++) {
+                    hash = ((hash << 5) - hash) + textPrompt.charCodeAt(i);
+                    hash |= 0;
+                }
+                const seed = Math.abs(hash % 100) / 100;
+                
+                // Genre-specific scales
+                const scales = {
+                    'Electronic': [329.63, 369.99, 415.30, 440.00, 493.88, 523.25, 587.33],
+                    'Lo-fi': [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 523.25],
+                    'Ambient': [220.00, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00],
+                    'Pop': [261.63, 293.66, 329.63, 392.00, 440.00, 493.88, 523.25],
+                    'Rock': [293.66, 329.63, 369.99, 392.00, 440.00, 493.88, 523.25],
+                    'Cinematic': [174.61, 207.65, 233.08, 261.63, 311.13, 349.23, 392.00]
+                };
+                
+                let scale = scales[genre] || scales.Electronic;
+                // Add seed-based variation
+                scale = scale.map(f => f * (0.98 + (seed * 0.04)));
+                
+                const patternLength = 32;
+                let melody = [];
+                let lastNote = Math.floor(seed * scale.length);
+                
+                for (let i = 0; i < patternLength; i++) {
+                    let noteIndex;
+                    const rand = (Math.random() + seed) % 1;
+                    if (rand > 0.65 && lastNote !== -1) {
+                        noteIndex = lastNote;
+                    } else {
+                        noteIndex = Math.floor(rand * scale.length);
+                    }
+                    lastNote = noteIndex;
+                    const duration = rand > 0.7 ? 0.5 : 0.25;
+                    melody.push({
+                        freq: scale[noteIndex],
+                        duration: duration,
+                        startOffset: i * 0.25,
+                        velocity: 0.2 + (rand * 0.15)
+                    });
+                }
+                return { melody };
+            }
+            
+            async playSong(textPrompt, genre, onEndCallback) {
+                if (!this.audioCtx) this.initAudio();
+                if (this.audioCtx.state === 'suspended') {
+                    await this.audioCtx.resume();
+                }
+                if (this.isPlaying) this.stopCurrent();
+                
+                const tempo = genre === 'Lo-fi' ? 85 : (genre === 'Ambient' ? 70 : 110);
+                const { melody } = this.generateMelody(textPrompt, genre);
+                const secondsPerBeat = 60 / tempo;
+                const currentTime = this.audioCtx.currentTime;
+                this.isPlaying = true;
+                
+                let endTime = 0;
+                
+                // Lead Melody
+                melody.forEach(note => {
+                    const start = currentTime + (note.startOffset * secondsPerBeat);
+                    const durationSec = note.duration * secondsPerBeat;
+                    const end = start + durationSec;
+                    if (end > endTime) endTime = end;
+                    
+                    const osc = this.audioCtx.createOscillator();
+                    const noteGain = this.audioCtx.createGain();
+                    
+                    if (genre === 'Lo-fi') osc.type = 'sine';
+                    else if (genre === 'Electronic') osc.type = 'sawtooth';
+                    else if (genre === 'Ambient') osc.type = 'sine';
+                    else osc.type = 'triangle';
+                    
+                    osc.frequency.value = note.freq;
+                    noteGain.gain.setValueAtTime(note.velocity, start);
+                    noteGain.gain.exponentialRampToValueAtTime(0.0001, end);
+                    osc.connect(noteGain);
+                    noteGain.connect(this.gainNode);
+                    osc.start(start);
+                    osc.stop(end);
+                    this.activeNodes.push(osc, noteGain);
+                });
+                
+                // Bassline
+                const bassOsc = this.audioCtx.createOscillator();
+                const bassGain = this.audioCtx.createGain();
+                bassOsc.type = 'triangle';
+                bassOsc.frequency.value = 65.41;
+                bassGain.gain.value = 0.12;
+                bassOsc.connect(bassGain);
+                bassGain.connect(this.gainNode);
+                bassOsc.start(currentTime);
+                bassOsc.stop(endTime + 0.5);
+                this.activeNodes.push(bassOsc, bassGain);
+                
+                // Pad/Chords
+                const padOsc = this.audioCtx.createOscillator();
+                const padGain = this.audioCtx.createGain();
+                padOsc.type = 'sine';
+                padOsc.frequency.value = 130.81;
+                padGain.gain.value = 0.06;
+                padOsc.connect(padGain);
+                padGain.connect(this.gainNode);
+                padOsc.start(currentTime);
+                padOsc.stop(endTime + 0.3);
+                this.activeNodes.push(padOsc, padGain);
+                
+                const timeoutDuration = (endTime - currentTime) * 1000 + 500;
+                this.currentTimeout = setTimeout(() => {
+                    if (this.isPlaying) {
+                        this.isPlaying = false;
+                        if (onEndCallback) onEndCallback();
+                    }
+                }, Math.max(800, timeoutDuration));
+            }
+            
+            stopCurrent() {
+                if (this.currentTimeout) clearTimeout(this.currentTimeout);
+                if (this.activeNodes) {
+                    this.activeNodes.forEach(node => {
+                        try { node.stop && node.stop(); node.disconnect(); } catch(e) {}
+                    });
+                    this.activeNodes = [];
+                }
+                this.isPlaying = false;
+            }
+        }
+        
+        const synth = new SonicAISynth();
+        
+        // ==================== AI LYRIC GENERATOR ====================
+        const generateAILyrics = (prompt, genre) => {
+            const lyricTemplates = {
+                'Electronic': ['pulse', 'light', 'energy', 'digital', 'vibrate', 'neon', 'rhythm', 'electric'],
+                'Lo-fi': ['rain', 'midnight', 'coffee', 'dreams', 'quiet', 'slow', 'vibes', 'calm'],
+                'Ambient': ['space', 'silence', 'floating', 'eternal', 'calm', 'horizon', 'peace', 'zen'],
+                'Pop': ['heart', 'shine', 'tonight', 'dance', 'love', 'stars', 'forever', 'magic'],
+                'Rock': ['fire', 'rebel', 'thunder', 'wild', 'storm', 'rage', 'freedom', 'power'],
+                'Cinematic': ['epic', 'journey', 'destiny', 'brave', 'storm', 'rise', 'glory', 'legend']
+            };
+            
+            const words = lyricTemplates[genre] || lyricTemplates['Electronic'];
+            const topic = prompt.trim() || "music";
+            
+            return `🎤 VERSE 1:\nIn the ${words[0]} of ${topic},\nWhere ${words[1]} meets the sound,\nA ${words[2]} echoes through the air,\nA rhythm that we've found.\n\n🎶 CHORUS:\nSonicAI, take me higher,\n${words[3]} like digital fire,\n${words[4]} flows through the wire,\nThis ${words[5]} takes us higher!\n\n🎤 VERSE 2:\nThrough the ${words[6]} we navigate,\nWhere dreams and ${words[7]} create,\nA melody that never fades,\nIn this ${genre.toLowerCase()} serenade.\n\n✨ BRIDGE:\nArtificial intelligence,\nCreating sonic excellence,\nEvery note, a new existence,\nMusic born from code and persistence.\n\n🎶 CHORUS:\nSonicAI, take me higher,\n${words[3]} like digital fire,\n${words[4]} flows through the wire,\nThis ${words[5]} takes us higher!`;
+        };
+        
+        // ==================== COMPONENTS ====================
+        
+        const Header = () => {
+            const [scrolled, setScrolled] = useState(false);
+            
+            useEffect(() => {
+                const handleScroll = () => setScrolled(window.scrollY > 50);
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+            
+            return (
+                <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-[#0f172a]/95 backdrop-blur-md shadow-lg' : 'bg-transparent'}`}>
+                    <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 flex items-center justify-center animate-spin-slow">
+                                <span className="text-xl">🎵</span>
+                            </div>
+                            <h1 className="text-2xl font-bold">
+                                <span className="text-gradient">SonicAI</span>
+                            </h1>
+                        </div>
+                        <nav className="hidden md:flex gap-8">
+                            <a href="#features" className="hover:text-purple-400 transition">Features</a>
+                            <a href="#generator" className="hover:text-purple-400 transition">Generator</a>
+                            <a href="#pricing" className="hover:text-purple-400 transition">Pricing</a>
+                        </nav>
+                        <button className="btn-secondary px-5 py-2 rounded-full text-sm font-medium hover:text-purple-400">
+                            Sign In
+                        </button>
+                    </div>
+                </header>
+            );
+        };
+        
+        const Hero = ({ onGetStarted }) => {
+            return (
+                <section className="min-h-screen flex items-center justify-center pt-20 relative overflow-hidden">
+                    <div className="absolute top-20 left-10 w-72 h-72 bg-purple-600 rounded-full blur-[100px] opacity-20 animate-float"></div>
+                    <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-600 rounded-full blur-[120px] opacity-20 animate-float" style={{ animationDelay: '2s' }}></div>
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-full blur-3xl"></div>
+                    
+                    <div className="max-w-6xl mx-auto px-6 text-center relative z-10">
+                        <div className="inline-block px-4 py-2 rounded-full bg-white/10 border border-white/20 mb-6 animate-glow">
+                            <span className="text-sm">✨ AI-Powered Music Generation</span>
+                        </div>
+                        <h1 className="text-5xl md:text-7xl font-bold mb-6">
+                            Generate Music with
+                            <span className="text-gradient block mt-2">Artificial Intelligence</span>
+                        </h1>
+                        <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
+                            Transform your ideas into studio-quality tracks. Describe your vision, choose a genre, and let SonicAI compose unique music in seconds.
+                        </p>
+                        <div className="flex flex-wrap gap-4 justify-center">
+                            <button onClick={onGetStarted} className="btn-primary px-8 py-4 rounded-full font-semibold text-lg flex items-center gap-2">
+                                <span>🎧</span> Start Creating
+                            </button>
+                            <button className="btn-secondary px-8 py-4 rounded-full font-semibold text-lg">
+                                Watch Demo
+                            </button>
+                        </div>
+                        <div className="mt-16 flex flex-wrap justify-center gap-8 text-sm text-gray-400">
+                            <div className="flex items-center gap-2">✨ 50+ Genres</div>
+                            <div className="flex items-center gap-2">🎵 Real-time Generation</div>
+                            <div className="flex items-center gap-2">⚡ Instant Preview</div>
+                            <div className="flex items-center gap-2">🎤 AI Lyrics</div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+        
+        const MusicGenerator = () => {
+            const [prompt, setPrompt] = useState("dreamy night sky with shooting stars");
+            const [genre, setGenre] = useState("Electronic");
+            const [isGenerating, setIsGenerating] = useState(false);
+            const [generatedSong, setGeneratedSong] = useState(null);
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [lyrics, setLyrics] = useState("");
+            const [activeTab, setActiveTab] = useState("lyrics");
+            
+            const genres = ["Electronic", "Lo-fi", "Ambient", "Pop", "Rock", "Cinematic"];
+            
+            const handleGenerate = async () => {
+                if (!prompt.trim()) {
+                    alert("Please enter a creative prompt!");
+                    return;
+                }
+                setIsGenerating(true);
+                await new Promise(r => setTimeout(r, 800));
+                
+                const newLyrics = generateAILyrics(prompt, genre);
+                setLyrics(newLyrics);
+                setGeneratedSong({
+                    prompt: prompt,
+                    genre: genre,
+                    timestamp: new Date().toLocaleTimeString(),
+                    title: prompt.slice(0, 35) + (prompt.length > 35 ? "..." : "")
+                });
+                
+                if (isPlaying) {
+                    synth.stopCurrent();
+                    setIsPlaying(false);
+                }
+                setIsGenerating(false);
+            };
+            
+            const handlePlayPause = async () => {
+                if (!generatedSong) {
+                    alert("Generate a song first!");
+                    return;
+                }
+                try {
+                    if (isPlaying) {
+                        synth.stopCurrent();
+                        setIsPlaying(false);
+                    } else {
+                        await synth.playSong(generatedSong.prompt, generatedSong.genre, () => {
+                            setIsPlaying(false);
+                        });
+                        setIsPlaying(true);
+                    }
+                } catch (err) {
+                    alert("Click again to enable audio playback");
+                }
+            };
+            
+            const handleStop = () => {
+                synth.stopCurrent();
+                setIsPlaying(false);
+            };
+            
+            useEffect(() => {
+                return () => synth.stopCurrent();
+            
