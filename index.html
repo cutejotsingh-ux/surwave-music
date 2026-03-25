@@ -1,284 +1,345 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SonicAI - Generate Music with AI</title>
-    <meta name="description" content="Create studio-quality music with Artificial Intelligence. Text to Audio generation in seconds.">
-    
-    <!-- React and Libraries -->
-    <script src="https://unpkg.com/react@18.2.0/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.development.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Suno AI Clone | AI Music Generator</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1a3a 100%);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            color: #fff;
         }
-        
+
         /* Custom Animations */
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(5deg); }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        
-        @keyframes glow {
+
+        @keyframes glowPulse {
             0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
             50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.6); }
         }
-        
-        @keyframes wave {
+
+        @keyframes waveAnimation {
             0% { transform: scaleY(0.3); }
             50% { transform: scaleY(1); }
             100% { transform: scaleY(0.3); }
         }
-        
-        @keyframes spin-slow {
+
+        @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-        
-        .animate-float {
-            animation: float 6s ease-in-out infinite;
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
-        
+
+        .animate-gradient {
+            background: linear-gradient(270deg, #8b5cf6, #06b6d4, #ec489a, #8b5cf6);
+            background-size: 300% 300%;
+            animation: gradientShift 6s ease infinite;
+        }
+
         .animate-glow {
-            animation: glow 3s ease-in-out infinite;
+            animation: glowPulse 2s ease-in-out infinite;
         }
-        
+
         .wave-bar {
-            animation: wave 0.8s ease-in-out infinite;
+            animation: waveAnimation 0.6s ease-in-out infinite;
         }
-        
-        .animate-spin-slow {
-            animation: spin-slow 8s linear infinite;
+
+        .animate-spin {
+            animation: spin 3s linear infinite;
         }
-        
-        /* Glass morphism */
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Glass Morphism */
         .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            border-radius: 1.5rem;
-        }
-        
-        .glass-card-light {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
         }
-        
-        /* Button Styles */
+
+        .glass-card-heavy {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 24px;
+        }
+
+        /* Buttons */
         .btn-primary {
             background: linear-gradient(135deg, #8b5cf6, #06b6d4);
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
         }
-        
+
+        .btn-primary:active {
+            transform: translateY(0px);
+        }
+
         .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(139, 92, 246, 0.5);
             transition: all 0.3s ease;
         }
-        
+
         .btn-secondary:hover {
+            background: rgba(139, 92, 246, 0.2);
             border-color: #8b5cf6;
-            background: rgba(139, 92, 246, 0.1);
         }
-        
+
+        /* Text Gradient */
         .text-gradient {
-            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4, #ec489a);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            background-size: 200% auto;
+            animation: gradientShift 3s ease infinite;
         }
-        
+
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
-        
+
         ::-webkit-scrollbar-track {
-            background: #1e293b;
+            background: #1e1e2e;
         }
-        
+
         ::-webkit-scrollbar-thumb {
             background: linear-gradient(135deg, #8b5cf6, #06b6d4);
             border-radius: 10px;
         }
-        
+
         /* Input Styles */
         input, textarea, select {
             transition: all 0.3s ease;
         }
-        
+
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #8b5cf6;
             box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
         }
+
+        /* Music Visualizer */
+        .visualizer-bar {
+            transition: height 0.1s ease;
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="app"></div>
 
     <script>
-        const { useState, useEffect, useRef } = React;
-        
-        // ==================== AI MUSIC SYNTHESIZER ENGINE ====================
-        class SonicAISynth {
+        // ==================== AI MUSIC ENGINE ====================
+        class SunoAIClone {
             constructor() {
-                this.audioCtx = null;
+                this.audioContext = null;
                 this.isPlaying = false;
                 this.activeNodes = [];
-                this.gainNode = null;
+                this.masterGain = null;
                 this.currentTimeout = null;
+                this.currentSongData = null;
             }
-            
+
             initAudio() {
-                if (this.audioCtx) return;
-                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                this.gainNode = this.audioCtx.createGain();
-                this.gainNode.gain.value = 0.3;
-                this.gainNode.connect(this.audioCtx.destination);
+                if (this.audioContext) return;
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                this.masterGain = this.audioContext.createGain();
+                this.masterGain.gain.value = 0.35;
+                this.masterGain.connect(this.audioContext.destination);
             }
-            
-            // AI Melody Generation based on prompt and genre
-            generateMelody(textPrompt, genre) {
-                // Create hash from text prompt for unique variations
-                let hash = 0;
-                for (let i = 0; i < textPrompt.length; i++) {
-                    hash = ((hash << 5) - hash) + textPrompt.charCodeAt(i);
-                    hash |= 0;
+
+            // AI Music Generation
+            generateAIMusic(prompt, genre, style, mood) {
+                // Create unique seed from prompt
+                let seed = 0;
+                for (let i = 0; i < prompt.length; i++) {
+                    seed = ((seed << 5) - seed) + prompt.charCodeAt(i);
+                    seed |= 0;
                 }
-                const seed = Math.abs(hash % 100) / 100;
+                const randomFactor = Math.abs(seed % 100) / 100;
                 
-                // Genre-specific scales
-                const scales = {
-                    'Electronic': [329.63, 369.99, 415.30, 440.00, 493.88, 523.25, 587.33],
-                    'Lo-fi': [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 523.25],
-                    'Ambient': [220.00, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00],
-                    'Pop': [261.63, 293.66, 329.63, 392.00, 440.00, 493.88, 523.25],
-                    'Rock': [293.66, 329.63, 369.99, 392.00, 440.00, 493.88, 523.25],
-                    'Cinematic': [174.61, 207.65, 233.08, 261.63, 311.13, 349.23, 392.00]
+                // Genre-specific scales and tempos
+                const genreConfig = {
+                    'Pop': { scale: [261.63, 293.66, 329.63, 392.00, 440.00, 493.88], tempo: 120, type: 'sine' },
+                    'Rock': { scale: [293.66, 329.63, 369.99, 392.00, 440.00, 493.88], tempo: 140, type: 'sawtooth' },
+                    'Electronic': { scale: [329.63, 369.99, 415.30, 440.00, 493.88, 523.25], tempo: 128, type: 'square' },
+                    'Hip Hop': { scale: [261.63, 293.66, 329.63, 349.23, 392.00, 440.00], tempo: 90, type: 'triangle' },
+                    'Lo-fi': { scale: [220.00, 261.63, 293.66, 329.63, 349.23, 392.00], tempo: 85, type: 'sine' },
+                    'Ambient': { scale: [174.61, 207.65, 233.08, 261.63, 311.13, 349.23], tempo: 70, type: 'sine' },
+                    'Cinematic': { scale: [174.61, 207.65, 233.08, 261.63, 311.13, 349.23, 392.00], tempo: 100, type: 'triangle' },
+                    'Jazz': { scale: [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88], tempo: 110, type: 'sine' }
                 };
                 
-                let scale = scales[genre] || scales.Electronic;
-                // Add seed-based variation
-                scale = scale.map(f => f * (0.98 + (seed * 0.04)));
+                const config = genreConfig[genre] || genreConfig['Pop'];
                 
-                const patternLength = 32;
+                // Adjust based on mood
+                let moodMultiplier = 1;
+                if (mood === 'Energetic') moodMultiplier = 1.2;
+                if (mood === 'Calm') moodMultiplier = 0.8;
+                
+                const tempo = config.tempo * moodMultiplier;
+                const scale = config.scale.map(f => f * (0.98 + (randomFactor * 0.04)));
+                
+                // Generate melody pattern
+                const patternLength = 48;
                 let melody = [];
-                let lastNote = Math.floor(seed * scale.length);
+                let lastNote = Math.floor(randomFactor * scale.length);
                 
                 for (let i = 0; i < patternLength; i++) {
                     let noteIndex;
-                    const rand = (Math.random() + seed) % 1;
-                    if (rand > 0.65 && lastNote !== -1) {
+                    const rand = (Math.random() + randomFactor) % 1;
+                    
+                    if (rand > 0.6 && lastNote !== -1) {
                         noteIndex = lastNote;
                     } else {
                         noteIndex = Math.floor(rand * scale.length);
                     }
                     lastNote = noteIndex;
+                    
                     const duration = rand > 0.7 ? 0.5 : 0.25;
+                    const isRest = rand < 0.1;
+                    
                     melody.push({
-                        freq: scale[noteIndex],
+                        freq: isRest ? null : scale[noteIndex],
                         duration: duration,
                         startOffset: i * 0.25,
-                        velocity: 0.2 + (rand * 0.15)
+                        velocity: 0.2 + (rand * 0.2),
+                        isRest: isRest
                     });
                 }
-                return { melody };
+                
+                return { melody, tempo, waveform: config.type };
             }
-            
-            async playSong(textPrompt, genre, onEndCallback) {
-                if (!this.audioCtx) this.initAudio();
-                if (this.audioCtx.state === 'suspended') {
-                    await this.audioCtx.resume();
+
+            async playSong(songData, onEndCallback) {
+                if (!this.audioContext) this.initAudio();
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
                 }
                 if (this.isPlaying) this.stopCurrent();
                 
-                const tempo = genre === 'Lo-fi' ? 85 : (genre === 'Ambient' ? 70 : 110);
-                const { melody } = this.generateMelody(textPrompt, genre);
+                this.currentSongData = songData;
+                const { melody, tempo, waveform } = this.generateAIMusic(
+                    songData.prompt, 
+                    songData.genre, 
+                    songData.style, 
+                    songData.mood
+                );
+                
                 const secondsPerBeat = 60 / tempo;
-                const currentTime = this.audioCtx.currentTime;
+                const currentTime = this.audioContext.currentTime;
                 this.isPlaying = true;
                 
                 let endTime = 0;
                 
                 // Lead Melody
                 melody.forEach(note => {
+                    if (note.isRest) return;
+                    
                     const start = currentTime + (note.startOffset * secondsPerBeat);
                     const durationSec = note.duration * secondsPerBeat;
                     const end = start + durationSec;
                     if (end > endTime) endTime = end;
                     
-                    const osc = this.audioCtx.createOscillator();
-                    const noteGain = this.audioCtx.createGain();
+                    const osc = this.audioContext.createOscillator();
+                    const noteGain = this.audioContext.createGain();
                     
-                    if (genre === 'Lo-fi') osc.type = 'sine';
-                    else if (genre === 'Electronic') osc.type = 'sawtooth';
-                    else if (genre === 'Ambient') osc.type = 'sine';
-                    else osc.type = 'triangle';
-                    
+                    osc.type = waveform;
                     osc.frequency.value = note.freq;
                     noteGain.gain.setValueAtTime(note.velocity, start);
                     noteGain.gain.exponentialRampToValueAtTime(0.0001, end);
                     osc.connect(noteGain);
-                    noteGain.connect(this.gainNode);
+                    noteGain.connect(this.masterGain);
                     osc.start(start);
                     osc.stop(end);
                     this.activeNodes.push(osc, noteGain);
                 });
                 
-                // Bassline
-                const bassOsc = this.audioCtx.createOscillator();
-                const bassGain = this.audioCtx.createGain();
+                // Bass Line
+                const bassOsc = this.audioContext.createOscillator();
+                const bassGain = this.audioContext.createGain();
                 bassOsc.type = 'triangle';
                 bassOsc.frequency.value = 65.41;
                 bassGain.gain.value = 0.12;
                 bassOsc.connect(bassGain);
-                bassGain.connect(this.gainNode);
+                bassGain.connect(this.masterGain);
                 bassOsc.start(currentTime);
-                bassOsc.stop(endTime + 0.5);
+                bassOsc.stop(endTime + 0.8);
                 this.activeNodes.push(bassOsc, bassGain);
                 
-                // Pad/Chords
-                const padOsc = this.audioCtx.createOscillator();
-                const padGain = this.audioCtx.createGain();
+                // Drums/Rhythm (simple kick pattern)
+                const kickPattern = [0, 8, 16, 24, 32, 40];
+                kickPattern.forEach(beat => {
+                    const start = currentTime + (beat * 0.25 * secondsPerBeat);
+                    const kickOsc = this.audioContext.createOscillator();
+                    const kickGain = this.audioContext.createGain();
+                    kickOsc.type = 'sine';
+                    kickOsc.frequency.value = 80;
+                    kickGain.gain.setValueAtTime(0.25, start);
+                    kickGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.15);
+                    kickOsc.connect(kickGain);
+                    kickGain.connect(this.masterGain);
+                    kickOsc.start(start);
+                    kickOsc.stop(start + 0.15);
+                    this.activeNodes.push(kickOsc, kickGain);
+                });
+                
+                // Pad/Synth layer
+                const padOsc = this.audioContext.createOscillator();
+                const padGain = this.audioContext.createGain();
                 padOsc.type = 'sine';
                 padOsc.frequency.value = 130.81;
-                padGain.gain.value = 0.06;
+                padGain.gain.value = 0.08;
                 padOsc.connect(padGain);
-                padGain.connect(this.gainNode);
+                padGain.connect(this.masterGain);
                 padOsc.start(currentTime);
-                padOsc.stop(endTime + 0.3);
+                padOsc.stop(endTime + 0.5);
                 this.activeNodes.push(padOsc, padGain);
                 
-                const timeoutDuration = (endTime - currentTime) * 1000 + 500;
+                const timeoutDuration = (endTime - currentTime) * 1000 + 800;
                 this.currentTimeout = setTimeout(() => {
                     if (this.isPlaying) {
                         this.isPlaying = false;
                         if (onEndCallback) onEndCallback();
                     }
-                }, Math.max(800, timeoutDuration));
+                }, Math.max(1000, timeoutDuration));
             }
             
             stopCurrent() {
                 if (this.currentTimeout) clearTimeout(this.currentTimeout);
                 if (this.activeNodes) {
                     this.activeNodes.forEach(node => {
-                        try { node.stop && node.stop(); node.disconnect(); } catch(e) {}
+                        try { 
+                            node.stop && node.stop(); 
+                            node.disconnect(); 
+                        } catch(e) {}
                     });
                     this.activeNodes = [];
                 }
@@ -286,146 +347,104 @@
             }
         }
         
-        const synth = new SonicAISynth();
+        const aiMusicEngine = new SunoAIClone();
         
         // ==================== AI LYRIC GENERATOR ====================
-        const generateAILyrics = (prompt, genre) => {
-            const lyricTemplates = {
-                'Electronic': ['pulse', 'light', 'energy', 'digital', 'vibrate', 'neon', 'rhythm', 'electric'],
-                'Lo-fi': ['rain', 'midnight', 'coffee', 'dreams', 'quiet', 'slow', 'vibes', 'calm'],
-                'Ambient': ['space', 'silence', 'floating', 'eternal', 'calm', 'horizon', 'peace', 'zen'],
-                'Pop': ['heart', 'shine', 'tonight', 'dance', 'love', 'stars', 'forever', 'magic'],
-                'Rock': ['fire', 'rebel', 'thunder', 'wild', 'storm', 'rage', 'freedom', 'power'],
-                'Cinematic': ['epic', 'journey', 'destiny', 'brave', 'storm', 'rise', 'glory', 'legend']
-            };
-            
-            const words = lyricTemplates[genre] || lyricTemplates['Electronic'];
-            const topic = prompt.trim() || "music";
-            
-            return `🎤 VERSE 1:\nIn the ${words[0]} of ${topic},\nWhere ${words[1]} meets the sound,\nA ${words[2]} echoes through the air,\nA rhythm that we've found.\n\n🎶 CHORUS:\nSonicAI, take me higher,\n${words[3]} like digital fire,\n${words[4]} flows through the wire,\nThis ${words[5]} takes us higher!\n\n🎤 VERSE 2:\nThrough the ${words[6]} we navigate,\nWhere dreams and ${words[7]} create,\nA melody that never fades,\nIn this ${genre.toLowerCase()} serenade.\n\n✨ BRIDGE:\nArtificial intelligence,\nCreating sonic excellence,\nEvery note, a new existence,\nMusic born from code and persistence.\n\n🎶 CHORUS:\nSonicAI, take me higher,\n${words[3]} like digital fire,\n${words[4]} flows through the wire,\nThis ${words[5]} takes us higher!`;
-        };
+        class AILyricGenerator {
+            static generate(prompt, genre, mood) {
+                const templates = {
+                    'Pop': ['love', 'heart', 'dream', 'shine', 'tonight', 'dance', 'forever', 'magic'],
+                    'Rock': ['fire', 'storm', 'rebel', 'wild', 'thunder', 'rage', 'freedom', 'power'],
+                    'Electronic': ['pulse', 'light', 'energy', 'digital', 'vibrate', 'neon', 'rhythm', 'electric'],
+                    'Hip Hop': ['flow', 'rhyme', 'mic', 'beat', 'street', 'vibe', 'hustle', 'real'],
+                    'Lo-fi': ['rain', 'midnight', 'coffee', 'dreams', 'quiet', 'slow', 'vibes', 'calm'],
+                    'Ambient': ['space', 'silence', 'floating', 'eternal', 'calm', 'horizon', 'peace', 'zen'],
+                    'Cinematic': ['epic', 'journey', 'destiny', 'brave', 'storm', 'rise', 'glory', 'legend'],
+                    'Jazz': ['moon', 'night', 'smooth', 'blue', 'cool', 'groove', 'swing', 'soul']
+                };
+                
+                const words = templates[genre] || templates['Pop'];
+                const topic = prompt.slice(0, 30);
+                const moodEmoji = mood === 'Energetic' ? '⚡' : (mood === 'Calm' ? '🌙' : '💫');
+                
+                return `🎤 VERSE 1\n${moodEmoji} In the ${words[0]} of ${topic}\nWhere ${words[1]} meets the sound\nA ${words[2]} echoes through the air\nA rhythm that we've found\n\n🎶 CHORUS\nSuno AI, take me higher\n${words[3]} like digital fire\n${words[4]} flows through the wire\nThis ${words[5]} takes us higher!\n\n🎤 VERSE 2\nThrough the ${words[6]} we navigate\nWhere dreams and ${words[7]} create\nA melody that never fades\nIn this ${genre.toLowerCase()} serenade\n\n✨ BRIDGE\nArtificial intelligence\nCreating sonic excellence\nEvery note, a new existence\nMusic born from code and persistence\n\n🎶 CHORUS\nSuno AI, take me higher\n${words[3]} like digital fire\n${words[4]} flows through the wire\nThis ${words[5]} takes us higher!`;
+            }
+        }
         
-        // ==================== COMPONENTS ====================
+        // ==================== REACT COMPONENTS ====================
+        const { useState, useEffect, useRef } = React;
         
-        const Header = () => {
-            const [scrolled, setScrolled] = useState(false);
-            
-            useEffect(() => {
-                const handleScroll = () => setScrolled(window.scrollY > 50);
-                window.addEventListener('scroll', handleScroll);
-                return () => window.removeEventListener('scroll', handleScroll);
-            }, []);
-            
-            return (
-                <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-[#0f172a]/95 backdrop-blur-md shadow-lg' : 'bg-transparent'}`}>
-                    <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 flex items-center justify-center animate-spin-slow">
-                                <span className="text-xl">🎵</span>
-                            </div>
-                            <h1 className="text-2xl font-bold">
-                                <span className="text-gradient">SonicAI</span>
-                            </h1>
-                        </div>
-                        <nav className="hidden md:flex gap-8">
-                            <a href="#features" className="hover:text-purple-400 transition">Features</a>
-                            <a href="#generator" className="hover:text-purple-400 transition">Generator</a>
-                            <a href="#pricing" className="hover:text-purple-400 transition">Pricing</a>
-                        </nav>
-                        <button className="btn-secondary px-5 py-2 rounded-full text-sm font-medium hover:text-purple-400">
-                            Sign In
-                        </button>
-                    </div>
-                </header>
-            );
-        };
-        
-        const Hero = ({ onGetStarted }) => {
-            return (
-                <section className="min-h-screen flex items-center justify-center pt-20 relative overflow-hidden">
-                    <div className="absolute top-20 left-10 w-72 h-72 bg-purple-600 rounded-full blur-[100px] opacity-20 animate-float"></div>
-                    <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-600 rounded-full blur-[120px] opacity-20 animate-float" style={{ animationDelay: '2s' }}></div>
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-full blur-3xl"></div>
-                    
-                    <div className="max-w-6xl mx-auto px-6 text-center relative z-10">
-                        <div className="inline-block px-4 py-2 rounded-full bg-white/10 border border-white/20 mb-6 animate-glow">
-                            <span className="text-sm">✨ AI-Powered Music Generation</span>
-                        </div>
-                        <h1 className="text-5xl md:text-7xl font-bold mb-6">
-                            Generate Music with
-                            <span className="text-gradient block mt-2">Artificial Intelligence</span>
-                        </h1>
-                        <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
-                            Transform your ideas into studio-quality tracks. Describe your vision, choose a genre, and let SonicAI compose unique music in seconds.
-                        </p>
-                        <div className="flex flex-wrap gap-4 justify-center">
-                            <button onClick={onGetStarted} className="btn-primary px-8 py-4 rounded-full font-semibold text-lg flex items-center gap-2">
-                                <span>🎧</span> Start Creating
-                            </button>
-                            <button className="btn-secondary px-8 py-4 rounded-full font-semibold text-lg">
-                                Watch Demo
-                            </button>
-                        </div>
-                        <div className="mt-16 flex flex-wrap justify-center gap-8 text-sm text-gray-400">
-                            <div className="flex items-center gap-2">✨ 50+ Genres</div>
-                            <div className="flex items-center gap-2">🎵 Real-time Generation</div>
-                            <div className="flex items-center gap-2">⚡ Instant Preview</div>
-                            <div className="flex items-center gap-2">🎤 AI Lyrics</div>
-                        </div>
-                    </div>
-                </section>
-            );
-        };
-        
-        const MusicGenerator = () => {
+        const App = () => {
             const [prompt, setPrompt] = useState("dreamy night sky with shooting stars");
-            const [genre, setGenre] = useState("Electronic");
+            const [genre, setGenre] = useState("Pop");
+            const [style, setStyle] = useState("Melodic");
+            const [mood, setMood] = useState("Energetic");
             const [isGenerating, setIsGenerating] = useState(false);
-            const [generatedSong, setGeneratedSong] = useState(null);
+            const [currentSong, setCurrentSong] = useState(null);
             const [isPlaying, setIsPlaying] = useState(false);
             const [lyrics, setLyrics] = useState("");
-            const [activeTab, setActiveTab] = useState("lyrics");
+            const [activeTab, setActiveTab] = useState("player");
+            const [visualizerData, setVisualizerData] = useState(new Array(32).fill(5));
             
-            const genres = ["Electronic", "Lo-fi", "Ambient", "Pop", "Rock", "Cinematic"];
+            const genres = ["Pop", "Rock", "Electronic", "Hip Hop", "Lo-fi", "Ambient", "Cinematic", "Jazz"];
+            const styles = ["Melodic", "Energetic", "Ambient", "Rhythmic", "Experimental"];
+            const moods = ["Energetic", "Calm", "Melancholic", "Happy", "Epic"];
             
             const handleGenerate = async () => {
                 if (!prompt.trim()) {
                     alert("Please enter a creative prompt!");
                     return;
                 }
+                
                 setIsGenerating(true);
                 await new Promise(r => setTimeout(r, 800));
                 
-                const newLyrics = generateAILyrics(prompt, genre);
+                const newLyrics = AILyricGenerator.generate(prompt, genre, mood);
                 setLyrics(newLyrics);
-                setGeneratedSong({
+                setCurrentSong({
+                    id: Date.now(),
                     prompt: prompt,
                     genre: genre,
+                    style: style,
+                    mood: mood,
                     timestamp: new Date().toLocaleTimeString(),
-                    title: prompt.slice(0, 35) + (prompt.length > 35 ? "..." : "")
+                    title: prompt.slice(0, 40) + (prompt.length > 40 ? "..." : "")
                 });
                 
                 if (isPlaying) {
-                    synth.stopCurrent();
+                    aiMusicEngine.stopCurrent();
                     setIsPlaying(false);
                 }
                 setIsGenerating(false);
             };
             
             const handlePlayPause = async () => {
-                if (!generatedSong) {
+                if (!currentSong) {
                     alert("Generate a song first!");
                     return;
                 }
+                
                 try {
                     if (isPlaying) {
-                        synth.stopCurrent();
+                        aiMusicEngine.stopCurrent();
                         setIsPlaying(false);
                     } else {
-                        await synth.playSong(generatedSong.prompt, generatedSong.genre, () => {
+                        await aiMusicEngine.playSong(currentSong, () => {
                             setIsPlaying(false);
                         });
                         setIsPlaying(true);
+                        
+                        // Visualizer animation
+                        const interval = setInterval(() => {
+                            if (!isPlaying) {
+                                clearInterval(interval);
+                                return;
+                            }
+                            const newData = visualizerData.map(() => Math.random() * 40 + 5);
+                            setVisualizerData(newData);
+                        }, 100);
+                        
+                        setTimeout(() => clearInterval(interval), 30000);
                     }
                 } catch (err) {
                     alert("Click again to enable audio playback");
@@ -433,10 +452,21 @@
             };
             
             const handleStop = () => {
-                synth.stopCurrent();
+                aiMusicEngine.stopCurrent();
                 setIsPlaying(false);
             };
             
             useEffect(() => {
-                return () => synth.stopCurrent();
+                return () => {
+                    aiMusicEngine.stopCurrent();
+                };
+            }, []);
             
+            return (
+                <div className="min-h-screen">
+                    {/* Hero Section */}
+                    <div className="relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
+                            <div className="absolute top-20 left-10 w-96 h-96 bg-purple-600 rounded-full blur-[150px] opacity-20 animate-float"></div>
+                            <div className="absolute bottom-20 right-10 w-96 h-96 bg-pink-600 rounded-full blur-[150px] opacity-20 animate-float" style={{ animationDelay: '2s' }}></div>
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-purple-500/1
